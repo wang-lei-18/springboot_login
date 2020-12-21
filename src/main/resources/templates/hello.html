@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html  lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script th:src="@{/js/commonJs.js}"></script>
+</head>
+<body>
+    <div id="app">
+        欢迎进入
+        <button @click="go">进入你好页面</button>
+    </div>
+</body>
+
+<script>
+    let app = new Vue({
+        el: '#app',
+        data:{
+        },
+        methods: {
+            go() {
+                $.ajax({
+                    url: '/api/log/save',
+                    type: 'post',
+                    dataType: 'json',
+                    headers: {
+                      'token': token
+                    },
+                    success(r) {
+                        if (r.code === 0) {
+                            window.location.href = '/api/hello2'
+                        } else {
+                            var r = confirm('token失效重新登录！')
+                            if(r) {
+                                window.location.href = '/api'
+                            } else {
+                                window.location.href = '/api'
+                            }
+                        }
+                    },
+                    error(XMLHttpRequest, textStatus, errorThrown) {
+                    }
+                })
+            }
+        }
+    })
+</script>
+</html>

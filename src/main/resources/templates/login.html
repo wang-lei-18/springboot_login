@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html  lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script th:src="@{/js/commonJs.js}"></script>
+</head>
+<body>
+    <div id="app" style="margin-top: 20px; width: 50%;">
+        <fieldset class="layui-elem-field layui-field-title" style="text-align: center;">
+            <legend>登录</legend>
+        </fieldset>
+        <form class="layui-form" id="loginForm">
+            <div class="layui-form-item">
+                <label class="layui-form-label">
+                    用户名
+                </label>
+                <div class="layui-input-block">
+                    <input name="username" type="text" class="layui-input" placeholder="用户名"
+                           lay-verify="required" lay-verType="tips">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">
+                    密码
+                </label>
+                <div class="layui-input-block">
+                    <input name="password" type="password" class="layui-input" placeholder="密码"
+                           lay-verify="required" lay-verType="tips">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-form-label">
+                    验证码
+                </div>
+                <div class="layui-input-inline">
+                    <input type="text" name="validateCode" class="layui-input" placeholder="验证码"
+                           lay-verify="required" lay-verType="tips">
+                </div>
+                <div class="layui-input-inline" onclick="getCode()">
+                    <a href="javascript:void(0);" title="点击更换验证码">
+                        <img class="imgCode" th:src="@{/captcha/captchaImage(type=math)}"/>
+                    </a>
+                </div>
+            </div>
+            <div style="text-align: center">
+                <button type="button" class="layui-btn layui-btn-success" lay-submit lay-filter="login">登录</button>
+                <button type="button" class="layui-btn layui-btn-primary" onclick="goRegister()">注册</button>
+            </div>
+        </form>
+    </div>
+</body>
+
+<script>
+    layui.use(['layer', 'form'], function () {
+        let layer = layui.layer
+        let form = layui.form
+        form.on('submit(login)', function(data) {
+            let validateCode = $("input[name = 'validateCode']").val()
+            let username = $("input[name = 'username']").val()
+            let password = $("input[name = 'password']").val()
+            $.ajax({
+                url: ctx + "/api/login",
+                data: {
+                    'username': username,
+                    'password': password,
+                    'validateCode': validateCode
+                },
+                dataType: "json",
+                type: "post",
+                cache: false,
+                success: function(r) {
+                    if(r.code === 0) {
+                        let expire = r.expire
+                        $.cookie('token', r.token, {expire: 7, path: '/'})
+                        window.location.href = ctx + "/api/hello"
+                    }else {
+                        layer.msg(r.msg, function() {
+                            window.location.href = ctx + "/api"
+                        })
+                    }
+                },
+                error: function(XMLHttpRequest, textStatus, errorThrown) {
+
+                }
+            })
+            return false
+        })
+    })
+
+    function getCode() {
+        var url = ctx + "/captcha/captchaImage?type=math"
+        $(".imgCode").attr("src", url)
+    }
+
+    function goRegister() {
+        window.location.href = ctx + "/api/register"
+    }
+</script>
+</html>

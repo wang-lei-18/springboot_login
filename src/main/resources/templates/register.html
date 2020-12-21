@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html  lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script th:src="@{/js/commonJs.js}"></script>
+</head>
+<body>
+    <div id="app" style="margin-top: 20px; width: 50%;">
+        <fieldset class="layui-elem-field layui-field-title" style="text-align: center;">
+            <legend>注册</legend>
+        </fieldset>
+        <div>
+            <form id="registerForm" class="layui-form">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">
+                        <span style="color: red;">*</span>
+                        用户名
+                    </label>
+                    <div class="layui-input-block">
+                        <input type="text" name="username" class="layui-input"
+                               lay-verify="required|isName" lay-verType="tips" id="username">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">
+                        <span style="color: red;">*</span>
+                        密码
+                    </label>
+                    <div class="layui-input-block">
+                        <input type="text" name="password" class="layui-input"
+                               lay-verify="required|pass" lay-verType="tips">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">
+                        验证码
+                    </label>
+                    <div class="layui-input-inline">
+                        <input type="text" class="layui-input" name="validateCode" lay-verify="required" lay-verType="tips">
+                    </div>
+                    <div class="layui-input-inline" onclick="getCode()">
+                        <a href="javascript:void(0);" title="点击更换验证码">
+                            <img class="imgCode" th:src="@{/captcha/captchaImage(type=math)}"/>
+                        </a>
+                    </div>
+                </div>
+                <div style="text-align: center">
+                    <button type="button" class="layui-btn layui-btn-success" lay-submit lay-filter="save">注册</button>
+                    <button type="button" class="layui-btn layui-btn-primary" onclick="goLogin()">登录</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+<script>
+    function checkUsername() {
+        let username = $('#username').val()
+        let msg = ''
+        $.ajax({
+            url: ctx + '/api/register/checkUsername',
+            data: {
+                'username': username
+            },
+            type: 'post',
+            dataType: 'json',
+            async: false,
+            success(r) {
+                if(r.code === 1) {
+                    msg = r.msg
+                }
+            }
+        })
+        return msg
+    }
+    layui.use(['form', 'layer'], function() {
+        let form = layui.form
+        let layer = layui.layer
+        form.render()
+        form.verify({
+            isName: function (value, item){
+                var msg = checkUsername()
+                return msg
+            },
+            pass: [
+                /^[\S]{6,16}$/,
+                '密码必须6到16位，且不能出现空格'
+            ]
+        })
+        form.on('submit(save)', function() {
+            let username = $("input[name='username']").val()
+            let password = $("input[name='password']").val()
+            let validateCode = $("input[name='validateCode']").val()
+            console.log('11111111')
+            $.ajax({
+                url: ctx + "/api/register/registerUser",
+                type: "post",
+                dataType: "json",
+                data: {
+                    'username': username,
+                    'password': password,
+                    'validateCode': validateCode
+                },
+                cache: false,
+                success: function(r){
+                    if(r.code === 0) {
+                        let expire = r.expire
+                        $.cookie('token', r.token, {expire: 7, path: '/'})
+                        window.location.href = ctx + '/api/hello'
+                    } else {
+                        layer.msg(r.msg, function() {
+                            window.location.href = ctx + "/api/register"
+                        })
+                    }
+                },
+                error: function(XMLHttpRequest, textStatus, errorThrown){
+                    alert('1111111')
+                }
+            })
+            return false
+        })
+    })
+    function getCode() {
+        console.log('2222222')
+        var url = ctx + "/captcha/captchaImage?type=math"
+        console.log(url)
+        $(".imgCode").attr("src", url)
+    }
+    function goLogin() {
+        window.location.href = ctx + "/api"
+    }
+</script>
+</html>

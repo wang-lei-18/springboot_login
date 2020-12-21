@@ -1,0 +1,49 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.dao.TokenMapper">
+    <resultMap id="tokenResult" type="com.example.demo.entity.TokenEntity">
+        <result column="user_id" property="userId"></result>
+        <result column="token" property="token"></result>
+        <result column="expire_time" property="expireTime"></result>
+        <result column="update_time" property="updateTime"></result>
+    </resultMap>
+
+    <insert id="insertUser">
+        insert into token (user_id, token, expire_time, update_time)
+        values(
+            #{userId},
+            #{token},
+            #{expireTime},
+            #{updateTime}
+        )
+    </insert>
+
+    <update id="updateUser">
+        update token set
+            token = #{token},
+            expire_time = #{expireTime},
+            update_time = #{updateTime}
+        where user_id = #{userId}
+    </update>
+
+    <select id="selectTokenByUserId" resultMap="tokenResult">
+        select
+            user_id,
+            token,
+            expire_time,
+            update_time
+        from token
+        where user_id = #{userId}
+    </select>
+
+    <select id="selectTokenByToken" resultMap="tokenResult">
+        select
+            user_id,
+            token,
+            expire_time,
+            update_time
+        from token
+        where token = #{token}
+    </select>
+</mapper>
